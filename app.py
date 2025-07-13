@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 import os
 from dotenv import load_dotenv
 import firebase_admin
@@ -15,6 +15,21 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 @app.route("/")
 def home():
   return render_template("login.html")
+
+@app.route("/assign_user_role", methods=["POST"])
+def assign_user_role():
+    data = request.get_json()
+    uid = data.get("uid")
+    email = data.get("email")
+    username = data.get("username")
+
+    db.collection("users").document(uid).set({
+        "email": email,
+        "username": username,
+        "role": "user"
+    })
+
+    return {"status": "role and username assigned"}, 200
 
 @app.route("/admin_dashboard")
 def admin_dashboard():

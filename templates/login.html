@@ -6,11 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login | F1 Fantasy League</title>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
-
     <!-- Config file -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
     <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 
     <!-- CSS file -->
@@ -32,45 +31,47 @@
     <main>
       <div class="login-wrapper">
 
-        <!-- Left Section -->
-        <div class="login-left">
+        <!-- Form container -->
+        <div class="form-container">
           <h1 class="main-title">FANTASY ESPORTS F1</h1>
           <p class="subtitle">The F1 Esports Fantasy League</p>
 
           <form class="login-form">
             <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Type your email" />
+            <input type="email" id="email" placeholder="Type your email" required />
 
             <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Type your password" />
+            <input type="password" id="password" placeholder="Type your password" required />
 
             <button type="button" class="btn-signin" onclick="login()">Sign In</button>
-            <button type="button" class="btn-signup" onclick="window.location.href='/signup'">Sign Up</button>
+            <button type="button" class="btn-signup" onclick="signup()">Sign Up</button>
           </form>
 
           <div id="output"></div>
         </div>
 
-        <!-- Right Section -->
-        <div class="login-right">
+        <!-- Image container -->
+        <div class="login-image">
           <img src="{{ url_for('static', filename='images/login.png') }}" alt="Login Visual" class="login-image" />
         </div>
 
       </div>
     </main>
-
     <script>
       const auth = firebase.auth();
+      const db = firebase.firestore(); // Requires Firestore SDK if using Firestore
 
+      // SIGN IN
       function login() {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        console.log("Login button clicked");
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
 
         auth.signInWithEmailAndPassword(email, password)
           .then((userCredential) => {
             const user = userCredential.user;
 
-            // Example conditional logic based on email domain or role
+            // Redirect based on role (optional logic)
             if (email.includes("admin")) {
               window.location.href = "/admin_dashboard";
             } else {
@@ -79,7 +80,44 @@
           })
           .catch((error) => {
             document.getElementById("output").innerHTML =
-              `<div class="error">${error.message}</div>`;
+              `<div class="error">Sign In failed: ${error.message}</div>`;
+          });
+      }
+
+      // SIGN UP
+      function signup() {
+        console.log("Signup button clicked");
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!email || !password) {
+          document.getElementById("output").innerHTML =
+            `<div class="error">Please enter email and password.</div>`;
+          return;
+        }
+
+        auth.createUserWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            const uid = user.uid;
+
+            // Generate username from email
+            const username = email.split("@")[0];
+
+            // Save user profile to Firestore (or send to Flask backend)
+            fetch("/assign_user_role", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ email, uid, username })
+            });
+
+            window.location.href = "/user_dashboard";
+          })
+          .catch((error) => {
+            document.getElementById("output").innerHTML =
+              `<div class="error">Sign Up failed: ${error.message}</div>`;
           });
       }
     </script>

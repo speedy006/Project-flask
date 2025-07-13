@@ -63,7 +63,7 @@ header {
   height: calc(100vh - 60px);
 }
 
-.login-left, .login-right {
+.login-form, .login-image {
   flex: 1;
   padding: 40px;
   display: flex;
@@ -71,11 +71,11 @@ header {
   justify-content: center;
 }
 
-.login-left {
+.login-form {
   background-color: #f5f5f5;
 }
 
-.login-right {
+.login-image {
   background-color: #f5f5f5;
   align-items: center;
 }
