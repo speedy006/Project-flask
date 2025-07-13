@@ -2,29 +2,62 @@
 <html lang="en">
 
   <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login | F1 Fantasy League</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | F1 Fantasy League</title>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
 
-  <!-- Config file -->
-  <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
+    <!-- Config file -->
+    <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 
-  <!-- CSS file -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+    <!-- Extra fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sansita+One&family=Poppins&display=swap" rel="stylesheet">
   </head>
 
   <body>
-    <div class="login-container">
-      <h2>Login to F1 Fantasy League</h2>
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
-      <button onclick="login()">Login</button>
-      <div id="output"></div>
-    </div>
+    <header>
+      <div class="site-header">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Site Logo" class="logo" />
+        <div class="spacer"></div>
+        <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile" class="profile-img" />
+      </div>
+    </header>
+
+    <main>
+      <div class="login-wrapper">
+
+        <!-- Left Section -->
+        <div class="login-left">
+          <h1 class="main-title">FANTASY ESPORTS F1</h1>
+          <p class="subtitle">The F1 Esports Fantasy League</p>
+
+          <form class="login-form">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Type your email" />
+
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Type your password" />
+
+            <button type="button" class="btn-signin" onclick="login()">Sign In</button>
+            <button type="button" class="btn-signup" onclick="window.location.href='/signup'">Sign Up</button>
+          </form>
+
+          <div id="output"></div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="login-right">
+          <img src="{{ url_for('static', filename='images/login.png') }}" alt="Login Visual" class="login-image" />
+        </div>
+
+      </div>
+    </main>
 
     <script>
       const auth = firebase.auth();
