@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>User Dashboard | F1 Esports Fantasy League</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  </head>
+
+  <body>
+    <header class="app-header">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
+      <div class="header-spacer"></div>
+      <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile" class="header-profile">
+    </header>
+
+    <div class="dashboard-wrapper">
+
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar">
+        <h2>F1 Fantasy</h2>
+        <ul>
+          <li><a href="/user_dashboard" class="active">Home</a></li>
+          <li><a href="/leagues">Leagues</a></li>
+          <li><a href="/teams">Teams</a></li>
+          <li><a href="/drivers">Drivers</a></li>
+          <li><a href="/calendar">Race Calendar</a></li>
+        </ul>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+
+        <!-- Fantasy Teams -->
+        <section class="fantasy-teams">
+          <h2>Fantasy Teams</h2>
+          <div class="team-cards">
+            <!-- Repeat this container for each team -->
+            <div class="card">Team Alpha</div>
+            <div class="card">Team Velocity</div>
+          </div>
+        </section>
+
+        <!-- Upcoming Races -->
+        <section class="upcoming-races">
+          <h2>Upcoming Races</h2>
+          <div class="race-cards">
+            <!-- Repeat this container for each race -->
+            <div class="card">Silverstone GP</div>
+            <div class="card">Monza GP</div>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </body>
+</html>

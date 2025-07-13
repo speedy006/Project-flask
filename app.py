@@ -37,7 +37,7 @@ def admin_dashboard():
 
 @app.route("/user_dashboard")
 def user_dashboard():
-    return "<h2>Welcome, User</h2>"
+    return render_template("user_dashboard.html")
 
 @app.route("/test_db")
 def test_db():
