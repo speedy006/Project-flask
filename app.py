@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
+import json
 
 load_dotenv()
 cred_path = os.getenv("FIREBASE_CREDENTIALS")
@@ -139,37 +140,56 @@ def get_races():
 @app.route("/admin/update/races", methods=["POST", "PUT"])
 def update_race():
     data = request.get_json()
-    race_data = {
-        "name": data.get("name"),
-        "date": data.get("date"),
-        "results": data.get("results")  # {driver_id: points}
-    }
+    race_id = data.get("id") or None
+    race_name = data.get("name", "").strip()
+    race_date = data.get("date", "").strip()
 
-    race_ref = db.collection("races").document(data.get("id") or None)
-    race_ref.set(race_data)
+    #Parse the 'results' field from JSON string to dict
+    try:
+        name_results = json.loads(data.get("results", "{}"))
+    except json.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON format in results"}), 400
 
-    # Update driver scores and record race result
-    for driver_id, points in race_data["results"].items():
-        driver_ref = db.collection("drivers").document(driver_id)
-        driver = driver_ref.get().to_dict()
-        new_total = driver.get("points", 0) + int(points)
+    if not race_name or not race_date or not name_results:
+        return jsonify({"error": "Missing race data"}), 400
 
-        driver_ref.update({
-            "points": new_total,
-            f"races.{race_ref.id}": int(points)
-        })
+    race_ref = db.collection("races").document(race_id) if race_id else db.collection("races").document()
+    driver_results = {}
 
-    # Update all team scores based on driver scores
-    teams = db.collection("teams").stream()
-    for team in teams:
-        t_data = team.to_dict()
+    for name, points in name_results.items():
+        query = db.collection("drivers").where("name", ">=", name).where("name", "<=", name + "\uf8ff").limit(1).get()
+        if query:
+            driver_doc = query[0]
+            driver_id = driver_doc.id
+            driver_data = driver_doc.to_dict()
+
+            new_total = driver_data.get("points", 0) + int(points)
+            db.collection("drivers").document(driver_id).update({
+                "points": new_total,
+                f"races.{race_ref.id}": int(points)
+            })
+
+            driver_results[driver_id] = int(points)
+        else:
+            print(f"Driver '{name}' not found")
+
+    #Save race with resolved driver IDs
+    race_ref.set({
+        "name": race_name,
+        "date": race_date,
+        "results": driver_results
+    })
+
+    #Recalculate team scores
+    for team_doc in db.collection("teams").stream():
+        team_data = team_doc.to_dict()
         total_score = 0
-        for d_id in t_data.get("drivers", []):
-            d = db.collection("drivers").document(d_id).get().to_dict()
-            total_score += d.get("points", 0)
-        db.collection("teams").document(team.id).update({"score": total_score})
+        for d_id in team_data.get("drivers", []):
+            driver = db.collection("drivers").document(d_id).get().to_dict()
+            total_score += driver.get("points", 0)
+        db.collection("teams").document(team_doc.id).update({"score": total_score})
 
-    return jsonify({"status": "race recorded, driver and team scores updated"}), 200
+    return jsonify({"status": "Race recorded with driver names"}), 200
 
 @app.route("/admin/data/leagues")
 def get_leagues():

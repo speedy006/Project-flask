@@ -3,7 +3,7 @@ const modal = document.getElementById('modalOverlay');
 const modalForm = document.getElementById('modalForm');
 const modalTitle = document.getElementById('modalTitle');
 
-// 🧠 Declare caches
+//Declare caches
 let cachedTeams = {};
 
 window.onload = () => {
@@ -12,7 +12,7 @@ window.onload = () => {
   });
 };
 
-// 🌐 Preload team documents for ID-to-name resolution
+//Preload team documents for ID-to-name resolution
 async function preloadTeamData() {
   const teamRes = await fetch("/admin/data/teams");
   const teams = await teamRes.json();
@@ -21,7 +21,7 @@ async function preloadTeamData() {
   });
 }
 
-// 🛠️ Load and render content by section
+//Load and render content by section
 async function loadSection(section) {
   const response = await fetch(`/admin/data/${section}`);
   const data = await response.json();
@@ -54,7 +54,7 @@ async function loadSection(section) {
   }
 }
 
-// 🎯 Render driver, race, and league cards (teams skipped here)
+//Render driver, race, and league cards
 function renderBlockContent(section, item) {
   switch (section) {
     case 'drivers':
@@ -72,7 +72,7 @@ function renderBlockContent(section, item) {
   }
 }
 
-// 🧩 Modal setup
+//Modal setup
 function openForm(section, data = null) {
   modal.style.display = "flex";
   modalForm.innerHTML = "";
@@ -116,7 +116,7 @@ function openForm(section, data = null) {
   };
 }
 
-// 🔍 Resolve driver names for team card display
+//Resolve driver names for team card display
 async function resolveDriverNames(driverIds) {
   const names = [];
   for (const id of driverIds) {
