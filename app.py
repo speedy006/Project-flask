@@ -99,6 +99,15 @@ def get_drivers():
         drivers.append(driver)
     return jsonify(drivers)
 
+@app.route("/admin/data/driver/<driver_id>")
+def get_driver(driver_id):
+    driver_doc = db.collection("drivers").document(driver_id).get()
+    if driver_doc.exists:
+        data = driver_doc.to_dict()
+        data["id"] = driver_id
+        return jsonify(data)
+    return jsonify({"error": "Driver not found"}), 404
+
 @app.route("/admin/update/drivers", methods=["POST", "PUT"])
 def update_driver():
     data = request.get_json()
