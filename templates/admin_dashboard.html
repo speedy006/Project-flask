@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard | F1 Esports Fantasy League</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <header class="app-header">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
+      <div class="header-spacer"></div>
+      <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile" class="header-profile">
+    </header>
+
+  <div class="admin-wrapper">
+    <nav class="admin-sidebar">
+      <ul>
+        <li><a href="#teams" class="active">Teams</a></li>
+        <li><a href="#drivers">Drivers</a></li>
+        <li><a href="#races">Races</a></li>
+        <li><a href="#leagues">Leagues</a></li>
+      </ul>
+    </nav>
+
+    <main class="admin-content">
+
+      {% for section in ['teams', 'drivers', 'races', 'leagues'] %}
+      <section id="{{ section }}" class="admin-section">
+        <div class="section-header">
+          <h2>{{ section.capitalize() }}</h2>
+          <button onclick="openForm('{{ section }}')">+ Add {{ section[:-1].capitalize() }}</button>
+        </div>
+        <div id="{{ section }}Grid" class="info-grid">
+          <!-- JS will populate blocks here -->
+        </div>
+      </section>
+      {% endfor %}
+
+    </main>
+  </div>
+
+  <!-- Modal template -->
+  <div id="modalOverlay" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h3 id="modalTitle">Edit</h3>
+      <form id="modalForm">
+        <!-- JS will inject form fields here -->
+        <button type="submit">Save</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+</body>
+</html>

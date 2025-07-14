@@ -33,11 +33,161 @@ def assign_user_role():
 
 @app.route("/admin_dashboard")
 def admin_dashboard():
-    return "<h2>Welcome, Admin</h2>"
+    return render_template("admin_dashboard.html")
 
 @app.route("/user_dashboard")
 def user_dashboard():
     return render_template("user_dashboard.html")
+
+@app.route("/admin/data/teams")
+def get_teams():
+    teams = []
+    for doc in db.collection("teams").stream():
+        team = doc.to_dict()
+        team["id"] = doc.id
+        teams.append(team)
+    return jsonify(teams)
+
+@app.route("/admin/update/teams", methods=["POST", "PUT"])
+def update_team():
+    data = request.get_json()
+    doc_id = data.get("id")
+    team_name = data.get("name", "").strip()
+    driver_names = [d.strip() for d in data.get("drivers", "").split(",")]
+
+    # Create or update team
+    team_data = {
+        "name": team_name,
+        "drivers": [],  # will store driver IDs
+        "score": 0      # initially zero
+    }
+
+    team_ref = db.collection("teams").document(doc_id) if doc_id else db.collection("teams").document()
+    team_ref.set(team_data)
+    team_id = team_ref.id
+
+    driver_ids = []
+    for name in driver_names:
+        # Check if driver exists
+        driver_query = db.collection("drivers").where("name", "==", name).limit(1).get()
+        if driver_query:
+            driver_doc = driver_query[0].reference
+        else:
+            driver_doc = db.collection("drivers").document()
+
+        driver_doc.set({
+            "name": name,
+            "team_id": team_id,
+            "price": 0,
+            "points": 0,
+            "races": {}
+        }, merge=True)
+
+        driver_ids.append(driver_doc.id)
+
+    # Update team with driver IDs
+    team_ref.update({"drivers": driver_ids})
+
+    return jsonify({"status": "team and drivers added"}), 200
+
+@app.route("/admin/data/drivers")
+def get_drivers():
+    drivers = []
+    for doc in db.collection("drivers").stream():
+        driver = doc.to_dict()
+        driver["id"] = doc.id
+        drivers.append(driver)
+    return jsonify(drivers)
+
+@app.route("/admin/update/drivers", methods=["POST", "PUT"])
+def update_driver():
+    data = request.get_json()
+    doc_id = data.get("id")
+
+    driver_data = {
+        "name": data.get("name"),
+        "price": int(data.get("price", 0)),
+        "points": int(data.get("points", 0)),
+        "team": data.get("team")
+    }
+
+    if request.method == "PUT" and doc_id:
+        db.collection("drivers").document(doc_id).set(driver_data)
+    else:
+        db.collection("drivers").add(driver_data)
+
+    return jsonify({"status": "success"}), 200
+
+@app.route("/admin/data/races")
+def get_races():
+    races = []
+    for doc in db.collection("races").stream():
+        race = doc.to_dict()
+        race["id"] = doc.id
+        races.append(race)
+    return jsonify(races)
+
+@app.route("/admin/update/races", methods=["POST", "PUT"])
+def update_race():
+    data = request.get_json()
+    race_data = {
+        "name": data.get("name"),
+        "date": data.get("date"),
+        "results": data.get("results")  # {driver_id: points}
+    }
+
+    race_ref = db.collection("races").document(data.get("id") or None)
+    race_ref.set(race_data)
+
+    # Update driver scores and record race result
+    for driver_id, points in race_data["results"].items():
+        driver_ref = db.collection("drivers").document(driver_id)
+        driver = driver_ref.get().to_dict()
+        new_total = driver.get("points", 0) + int(points)
+
+        driver_ref.update({
+            "points": new_total,
+            f"races.{race_ref.id}": int(points)
+        })
+
+    # Update all team scores based on driver scores
+    teams = db.collection("teams").stream()
+    for team in teams:
+        t_data = team.to_dict()
+        total_score = 0
+        for d_id in t_data.get("drivers", []):
+            d = db.collection("drivers").document(d_id).get().to_dict()
+            total_score += d.get("points", 0)
+        db.collection("teams").document(team.id).update({"score": total_score})
+
+    return jsonify({"status": "race recorded, driver and team scores updated"}), 200
+
+@app.route("/admin/data/leagues")
+def get_leagues():
+    leagues = []
+    for doc in db.collection("leagues").stream():
+        league = doc.to_dict()
+        league["id"] = doc.id
+        leagues.append(league)
+    return jsonify(leagues)
+
+@app.route("/admin/update/leagues", methods=["POST", "PUT"])
+def update_league():
+    data = request.get_json()
+    doc_id = data.get("id")
+
+    league_data = {
+        "name": data.get("name"),
+        "type": data.get("type"),  # "public" or "private"
+        "users": [u.strip() for u in data.get("users", "").split(",")]
+    }
+
+    if request.method == "PUT" and doc_id:
+        db.collection("leagues").document(doc_id).set(league_data)
+    else:
+        db.collection("leagues").add(league_data)
+
+    return jsonify({"status": "success"}), 200
 
 @app.route("/test_db")
 def test_db():
