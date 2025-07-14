@@ -71,7 +71,7 @@
           .then((userCredential) => {
             const user = userCredential.user;
 
-            // Redirect based on role (optional logic)
+            //Redirect based on role
             if (email.includes("admin")) {
               window.location.href = "/admin_dashboard";
             } else {

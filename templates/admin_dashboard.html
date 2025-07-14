@@ -34,7 +34,7 @@
           <button onclick="openForm('{{ section }}')">+ Add {{ section[:-1].capitalize() }}</button>
         </div>
         <div id="{{ section }}Grid" class="info-grid">
-          <!-- JS populates blocks here -->
+          <!-- JS blocks here -->
         </div>
       </section>
       {% endfor %}
@@ -48,7 +48,7 @@
       <span class="close" onclick="closeModal()">&times;</span>
       <h3 id="modalTitle">Edit</h3>
       <form id="modalForm">
-        <!-- JS injects form fields here -->
+        <!-- JS form fields here -->
         <button type="submit">Save</button>
       </form>
     </div>
