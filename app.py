@@ -64,11 +64,21 @@ def update_team():
     if not isinstance(driver_ids, list):
         return jsonify({"error": "Invalid driver format"}), 400
 
-    # Determine current team ID early
+    # Safely parse score and price
+    def safe_int(val, default=0):
+        try:
+            return int(str(val).strip())
+        except (ValueError, TypeError):
+            return default
+
+    score = safe_int(data.get("score"), 0)
+    price = safe_int(data.get("price"), 0)
+
+    # Get or create the team document reference
     team_ref = db.collection("teams").document(doc_id) if doc_id else db.collection("teams").document()
     team_id = team_ref.id
 
-    # Validate drivers: allow unassigned and those already in this team
+    # Validate drivers: allow unassigned or already assigned to this team only
     conflicts = []
     for d_id in driver_ids:
         d_doc = db.collection("drivers").document(d_id).get()
@@ -86,15 +96,17 @@ def update_team():
     team_data = {
         "name": team_name,
         "drivers": driver_ids,
-        "score": 0
+        "score": score,
+        "price": price
     }
 
+    # Update or create the team document
     if doc_id:
         team_ref.update(team_data)
     else:
         team_ref.set(team_data)
 
-    # Assign team_id to selected drivers
+    # Assign team_id to drivers
     for d_id in driver_ids:
         db.collection("drivers").document(d_id).update({"team_id": team_id})
 

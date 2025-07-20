@@ -35,7 +35,12 @@ function renderBlockContent(section, item) {
   switch (section) {
     case 'teams':
       const driverNames = Array.isArray(item.driver_names) ? item.driver_names.join(', ') : "None";
-      return `<h3>${item.name}</h3><p>Drivers: ${driverNames}</p><p>Score: ${item.score}</p>`;
+      return `
+        <h3>${item.name}</h3>
+        <p>Drivers: ${driverNames}</p>
+        <p>Score: ${item.score}</p>
+        <p>Price: $${item.price ?? 0}</p>
+      `;
 
     case 'drivers':
       const teamName = item.team_name || "Unassigned";
@@ -81,6 +86,7 @@ function openForm(section, data = null) {
     submit.textContent = "Save";
     modalForm.appendChild(submit);
 
+    // Submit handler for non-team sections
     modalForm.onsubmit = e => {
       e.preventDefault();
       const payload = {};
@@ -115,10 +121,19 @@ function openForm(section, data = null) {
     scoreInput.value = data?.score ?? 0;
     modalForm.appendChild(scoreInput);
 
+    const priceInput = document.createElement('input');
+    priceInput.placeholder = "Price";
+    priceInput.name = "price";
+    priceInput.type = "number";
+    priceInput.value = data?.price ?? 0;
+    modalForm.appendChild(priceInput);
+
     // Fetch drivers and build selection menus
     fetch("/admin/data/drivers")
       .then(res => res.json())
       .then(drivers => {
+        // Filter drivers: include unassigned and already-assigned to this team
+        const currentDrivers = data?.drivers || [];
         const available = drivers.filter(d => !d.team_id || d.team_id === teamId);
 
         for (let i = 0; i < 3; i++) {
@@ -135,8 +150,8 @@ function openForm(section, data = null) {
             option.value = driver.id;
             option.textContent = `${driver.name} (${driver.price})`;
 
-            // Preselect drivers that are already assigned to this team
-            if (data?.drivers?.includes(driver.id)) {
+            // Preselect drivers that are already assigned to this team (by index)
+            if (currentDrivers[i] === driver.id) {
               option.selected = true;
             }
 
@@ -151,12 +166,14 @@ function openForm(section, data = null) {
         submit.textContent = "Save";
         modalForm.appendChild(submit);
 
+        // Submit handler for teams section
         modalForm.onsubmit = e => {
           e.preventDefault();
 
           const payload = {
             name: modalForm.elements.name.value,
             score: parseInt(modalForm.elements.score.value || "0"),
+            price: parseInt(modalForm.elements.price.value || "0"),
             drivers: [...modalForm.elements]
               .filter(el => el.name === "drivers" && el.value)
               .map(el => el.value)
