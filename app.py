@@ -42,11 +42,16 @@ def user_dashboard():
 
 @app.route("/admin/data/teams")
 def get_teams():
+    all_drivers = {d.id: d.to_dict() for d in db.collection("drivers").stream()}
     teams = []
+
     for doc in db.collection("teams").stream():
         team = doc.to_dict()
+        driver_names = [all_drivers.get(d_id, {}).get("name", "Unknown") for d_id in team.get("drivers", [])]
+        team["driver_names"] = driver_names
         team["id"] = doc.id
         teams.append(team)
+
     return jsonify(teams)
 
 @app.route("/admin/update/teams", methods=["POST", "PUT"])
@@ -54,50 +59,58 @@ def update_team():
     data = request.get_json()
     doc_id = data.get("id")
     team_name = data.get("name", "").strip()
-    driver_names = [d.strip() for d in data.get("drivers", "").split(",")]
+    driver_ids = data.get("drivers", [])
 
-    # Create or update team
-    team_data = {
-        "name": team_name,
-        "drivers": [],  # will store driver IDs
-        "score": 0      # initially zero
-    }
+    if not isinstance(driver_ids, list):
+        return jsonify({"error": "Invalid driver format"}), 400
 
+    # Determine current team ID early
     team_ref = db.collection("teams").document(doc_id) if doc_id else db.collection("teams").document()
-    team_ref.set(team_data)
     team_id = team_ref.id
 
-    driver_ids = []
-    for name in driver_names:
-        # Check if driver exists
-        driver_query = db.collection("drivers").where("name", "==", name).limit(1).get()
-        if driver_query:
-            driver_doc = driver_query[0].reference
-        else:
-            driver_doc = db.collection("drivers").document()
+    # Validate drivers: allow unassigned and those already in this team
+    conflicts = []
+    for d_id in driver_ids:
+        d_doc = db.collection("drivers").document(d_id).get()
+        if d_doc.exists:
+            current_team = d_doc.to_dict().get("team_id")
+            if current_team and current_team != team_id:
+                conflicts.append(d_id)
 
-        driver_doc.set({
-            "name": name,
-            "team_id": team_id,
-            "price": 0,
-            "points": 0,
-            "races": {}
-        }, merge=True)
+    if conflicts:
+        return jsonify({
+            "error": "Some drivers are already assigned to another team.",
+            "conflicts": conflicts
+        }), 400
 
-        driver_ids.append(driver_doc.id)
+    team_data = {
+        "name": team_name,
+        "drivers": driver_ids,
+        "score": 0
+    }
 
-    # Update team with driver IDs
-    team_ref.update({"drivers": driver_ids})
+    if doc_id:
+        team_ref.update(team_data)
+    else:
+        team_ref.set(team_data)
 
-    return jsonify({"status": "team and drivers added"}), 200
+    # Assign team_id to selected drivers
+    for d_id in driver_ids:
+        db.collection("drivers").document(d_id).update({"team_id": team_id})
+
+    return jsonify({"status": "Team created or updated successfully"}), 200
 
 @app.route("/admin/data/drivers")
 def get_drivers():
+    teams = {t.id: t.to_dict().get("name", "Unknown") for t in db.collection("teams").stream()}
     drivers = []
+
     for doc in db.collection("drivers").stream():
         driver = doc.to_dict()
         driver["id"] = doc.id
+        driver["team_name"] = teams.get(driver.get("team_id"), "Unassigned")
         drivers.append(driver)
+
     return jsonify(drivers)
 
 @app.route("/admin/data/driver/<driver_id>")
@@ -114,15 +127,21 @@ def update_driver():
     data = request.get_json()
     doc_id = data.get("id")
 
+    def safe_int(value, default=0):
+        try:
+            return int(str(value).strip())
+        except (ValueError, TypeError):
+            return default
+
     driver_data = {
-        "name": data.get("name"),
-        "price": int(data.get("price", 0)),
-        "points": int(data.get("points", 0)),
-        "team": data.get("team")
+        "name": data.get("name", "").strip(),
+        "price": safe_int(data.get("price")),
+        "points": safe_int(data.get("points")),
+        "team_id": data.get("team_id", "").strip() or None
     }
 
     if request.method == "PUT" and doc_id:
-        db.collection("drivers").document(doc_id).set(driver_data)
+        db.collection("drivers").document(doc_id).update(driver_data)
     else:
         db.collection("drivers").add(driver_data)
 
@@ -231,3 +250,16 @@ def add_test_user():
         "email": "melvin@example.com"
     })
     return {"status": "test user added"}
+
+@app.route("/admin/audit/dangling-drivers")
+def audit_dangling_driver_refs():
+    driver_ids = set(doc.id for doc in db.collection("drivers").stream())
+    dangling = []
+
+    for team in db.collection("teams").stream():
+        team_data = team.to_dict()
+        for d_id in team_data.get("drivers", []):
+            if d_id not in driver_ids:
+                dangling.append((team.id, d_id))
+
+    return jsonify({"dangling": dangling})
