@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import os
 from dotenv import load_dotenv
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
 import json
 
 load_dotenv()
@@ -12,6 +12,15 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+
+#Firebase token verification
+def get_current_user_id():
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    try:
+        decoded_token = auth.verify_id_token(token)
+        return decoded_token.get("uid")
+    except Exception:
+        return None
 
 @app.route("/")
 def home():
@@ -249,29 +258,55 @@ def update_league():
 
     return jsonify({"status": "success"}), 200
 
-@app.route("/test_db")
-def test_db():
-    users_ref = db.collection("users").limit(1).stream()
-    users = [doc.to_dict() for doc in users_ref]
-    return {"status": "success", "data": users or "No users found"}
+@app.route("/user/fantasy_teams", methods=["GET", "POST"])
+def handle_fantasy_teams():
+    user_id = get_current_user_id()
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
 
-@app.route("/add_test_user")
-def add_test_user():
-    db.collection("users").document("test_user").set({
-        "name": "Melvin",
-        "email": "melvin@example.com"
-    })
-    return {"status": "test user added"}
+    if request.method == "GET":
+        teams_ref = db.collection("fantasy_teams").where("user_id", "==", user_id).stream()
+        teams = []
 
-@app.route("/admin/audit/dangling-drivers")
-def audit_dangling_driver_refs():
-    driver_ids = set(doc.id for doc in db.collection("drivers").stream())
-    dangling = []
+        # Fetch readable names
+        drivers = {d.id: d.to_dict().get("name") for d in db.collection("drivers").stream()}
+        team_map = {t.id: t.to_dict().get("name") for t in db.collection("teams").stream()}
 
-    for team in db.collection("teams").stream():
-        team_data = team.to_dict()
-        for d_id in team_data.get("drivers", []):
-            if d_id not in driver_ids:
-                dangling.append((team.id, d_id))
+        for doc in teams_ref:
+            t = doc.to_dict()
+            t["id"] = doc.id
+            t["driver_names"] = [drivers.get(d_id, "Unknown") for d_id in t.get("drivers", [])]
+            t["team_name"] = team_map.get(t.get("team"), "Unknown")
+            teams.append(t)
 
-    return jsonify({"dangling": dangling})
+        return jsonify(teams)
+
+    else:  # POST
+        data = request.get_json()
+        name = data.get("name", "").strip()
+        driver_ids = data.get("drivers", [])
+        team_id = data.get("team")
+
+        if len(driver_ids) != 5 or not team_id or not name:
+            return jsonify({"error": "Missing or invalid selection"}), 400
+
+        total_price = 0
+        for d_id in driver_ids:
+            doc = db.collection("drivers").document(d_id).get()
+            total_price += doc.to_dict().get("price", 0)
+        team_doc = db.collection("teams").document(team_id).get()
+        total_price += team_doc.to_dict().get("price", 0)
+
+        if total_price > 100_000_000:
+            return jsonify({"error": "Budget exceeded"}), 400
+
+        db.collection("fantasy_teams").add({
+            "user_id": user_id,
+            "name": name,
+            "drivers": driver_ids,
+            "team": team_id,
+            "price": total_price,
+            "points": 0
+        })
+
+        return jsonify({"status": "Fantasy team created successfully"}), 200

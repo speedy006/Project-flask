@@ -1,61 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard | F1 Esports Fantasy League</title>
 
-    <title>User Dashboard | F1 Esports Fantasy League</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
-  </head>
+  <!-- Fonts and Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
-  <body>
-    <header class="app-header">
-      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
-      <div class="header-spacer"></div>
-      <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile" class="header-profile">
-    </header>
+  <!-- Firebase SDKs (Compat build for browser use) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    <div class="dashboard-wrapper">
+  <!-- Firebase Config -->
+  <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 
-      <!-- Sidebar Navigation -->
-      <nav class="sidebar">
-        <h2>F1 Fantasy</h2>
-        <ul>
-          <li><a href="/user_dashboard" class="active">Home</a></li>
-          <li><a href="/leagues">Leagues</a></li>
-          <li><a href="/teams">Teams</a></li>
-          <li><a href="/drivers">Drivers</a></li>
-          <li><a href="/calendar">Race Calendar</a></li>
-        </ul>
-      </nav>
+  <!-- Firebase Initialization -->
+  <script>
+    firebase.initializeApp(firebaseConfig);
+  </script>
 
-      <!-- Main Content -->
-      <main class="main-content">
+  <!-- Custom JS -->
+  <script defer src="{{ url_for('static', filename='js/user_dashboard.js') }}"></script>
+</head>
+<body>
+  <header class="app-header">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
+    <div class="header-spacer"></div>
+    <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile" class="header-profile">
+  </header>
 
-        <!-- Fantasy Teams -->
-        <section class="fantasy-teams">
-          <h2>Fantasy Teams</h2>
-          <div class="team-cards">
-            <!-- Repeat this container for each team -->
-            <div class="card">Team Alpha</div>
-            <div class="card">Team Velocity</div>
-          </div>
-        </section>
+  <div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <h2>F1 Fantasy</h2>
+      <ul>
+        <li><a href="/user_dashboard" class="active">Home</a></li>
+        <li><a href="/leagues">Leagues</a></li>
+        <li><a href="/teams">Teams</a></li>
+        <li><a href="/drivers">Drivers</a></li>
+        <li><a href="/calendar">Race Calendar</a></li>
+      </ul>
+    </nav>
 
-        <!-- Upcoming Races -->
-        <section class="upcoming-races">
-          <h2>Upcoming Races</h2>
-          <div class="race-cards">
-            <!-- Repeat this container for each race -->
-            <div class="card">Silverstone GP</div>
-            <div class="card">Monza GP</div>
-          </div>
-        </section>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Fantasy Teams -->
+      <section class="fantasy-teams">
+        <h2>Fantasy Teams</h2>
+        <button onclick="openFantasyModal()">Create Fantasy Team</button>
+        <div class="team-cards" id="fantasyGrid"></div>
+      </section>
 
-      </main>
+      <!-- Upcoming Races -->
+      <section class="upcoming-races">
+        <h2>Upcoming Races</h2>
+        <div class="race-cards">
+          <div class="card">Silverstone GP</div>
+          <div class="card">Monza GP</div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-    </div>
-
-  </body>
+  <!-- Fantasy Team Creation Modal -->
+  <div id="fantasyModal" class="modal-overlay" style="display:none;">
+    <form id="fantasyForm" class="modal-content">
+      <h3>Create Fantasy Team</h3>
+      <input name="name" placeholder="Team Name" required />
+      <div id="driverSelects"></div>
+      <select name="team" id="teamSelect"></select>
+      <button type="submit">Submit</button>
+      <button type="button" onclick="closeFantasyModal()">Cancel</button>
+    </form>
+  </div>
+</body>
 </html>
