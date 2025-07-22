@@ -53,13 +53,10 @@
         <div class="team-cards" id="fantasyGrid"></div>
       </section>
 
-      <!-- Upcoming Races -->
-      <section class="upcoming-races">
-        <h2>Upcoming Races</h2>
-        <div class="race-cards">
-          <div class="card">Silverstone GP</div>
-          <div class="card">Monza GP</div>
-        </div>
+      <!-- Race Results -->
+      <section class="race-results">
+        <h2>Race Results</h2>
+        <div class="race-cards" id="raceGrid"></div>
       </section>
     </main>
   </div>
@@ -75,6 +72,15 @@
       <button type="submit">Submit</button>
       <button type="button" onclick="closeFantasyModal()">Cancel</button>
     </form>
+  </div>
+
+  <div id="raceModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" id="raceModalContent">
+      <h3>Race Results</h3>
+      <p id="raceMeta"></p>
+      <ul id="raceDriverList"></ul>
+      <button onclick="closeRaceModal()">Close</button>
+    </div>
   </div>
 </body>
 </html>

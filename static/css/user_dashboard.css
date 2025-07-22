@@ -180,6 +180,38 @@ section h2 {
   background-color: #c90000;
 }
 
+.race-results {
+  flex: 1;
+}
+
+.race-results h2 {
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.race-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.race-cards .card:hover {
+  transform: scale(1.02);
+  background-color: #f0f0f0;
+}
+
+#raceDriverList {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 /* 🛠 Fantasy Modal Styles */
 .modal-overlay {
   position: fixed;

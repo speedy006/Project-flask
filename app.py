@@ -231,6 +231,27 @@ def update_race():
 
     return jsonify({"status": "Race recorded with driver names"}), 200
 
+@app.route("/user/race_results/<race_id>")
+def get_race_results(race_id):
+    race_doc = db.collection("races").document(race_id).get()
+    if not race_doc.exists:
+        return jsonify({"error": "Race not found"}), 404
+
+    race = race_doc.to_dict()
+    all_drivers = {d.id: d.to_dict().get("name", "Unknown") for d in db.collection("drivers").stream()}
+
+    # Combine driver names with points from this race
+    results = []
+    for driver_id, name in all_drivers.items():
+        points = race.get("results", {}).get(driver_id, 0)
+        results.append({ "name": name, "points": points })
+
+    return jsonify({
+        "race_name": race.get("name"),
+        "date": race.get("date"),
+        "results": results
+    })
+
 @app.route("/admin/data/leagues")
 def get_leagues():
     leagues = []

@@ -156,3 +156,63 @@ function updateBudgetTracker() {
     tracker.textContent += " Over budget!";
   }
 }
+
+function loadRaceResults() {
+  fetch("/admin/data/races")
+    .then(res => res.json())
+    .then(races => {
+      const grid = document.getElementById("raceGrid");
+      grid.innerHTML = "";
+
+      races.forEach(race => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <h3>${race.name}</h3>
+          <p>Date: ${race.date}</p>
+        `;
+        card.onclick = () => openRaceModal(race.id); // ✅ make card clickable
+        grid.appendChild(card);
+      });
+    });
+}
+
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) {
+    window.location.href = "/";
+    return;
+  }
+
+  currentUser = user;
+  const token = await user.getIdToken();
+  attachFantasyForm(token);
+  loadFantasyTeams(token);
+  loadRaceResults(); // ← Add this line
+});
+
+function openRaceModal(raceId) {
+  fetch(`/user/race_results/${raceId}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("raceModal").style.display = "flex";
+      document.getElementById("raceMeta").textContent = `${data.race_name} — ${data.date}`;
+      const list = document.getElementById("raceDriverList");
+      list.innerHTML = "";
+
+      // Sort drivers by points descending
+      data.results.sort((a, b) => b.points - a.points);
+
+      data.results.forEach((d, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${i + 1}. ${d.name}: ${d.points} pts`;
+        li.style.fontSize = "13px";
+        li.style.lineHeight = "1.4";
+        if (i < 10) li.style.fontWeight = "bold"; // Optional: highlight podium
+        list.appendChild(li);
+      });
+    });
+}
+
+function closeRaceModal() {
+  document.getElementById("raceModal").style.display = "none";
+}
