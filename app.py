@@ -310,3 +310,20 @@ def handle_fantasy_teams():
         })
 
         return jsonify({"status": "Fantasy team created successfully"}), 200
+    
+@app.route("/user/fantasy_teams/<team_id>", methods=["DELETE"])
+def delete_fantasy_team(team_id):
+    user_id = get_current_user_id()
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    doc_ref = db.collection("fantasy_teams").document(team_id).get()
+    if not doc_ref.exists:
+        return jsonify({"error": "Fantasy team not found"}), 404
+
+    team_data = doc_ref.to_dict()
+    if team_data.get("user_id") != user_id:
+        return jsonify({"error": "Forbidden"}), 403
+
+    db.collection("fantasy_teams").document(team_id).delete()
+    return jsonify({"status": "Fantasy team deleted"}), 200

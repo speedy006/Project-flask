@@ -36,7 +36,7 @@
     <nav class="sidebar">
       <h2>F1 Fantasy</h2>
       <ul>
-        <li><a href="/user_dashboard" class="active">Home</a></li>
+        <li><a href="/user_dashboard">Home</a></li>
         <li><a href="/leagues">Leagues</a></li>
         <li><a href="/teams">Teams</a></li>
         <li><a href="/drivers">Drivers</a></li>
@@ -49,7 +49,7 @@
       <!-- Fantasy Teams -->
       <section class="fantasy-teams">
         <h2>Fantasy Teams</h2>
-        <button onclick="openFantasyModal()">Create Fantasy Team</button>
+        <button class="create-team-btn" onclick="openFantasyModal()">Create Fantasy Team</button>
         <div class="team-cards" id="fantasyGrid"></div>
       </section>
 
@@ -71,6 +71,7 @@
       <input name="name" placeholder="Team Name" required />
       <div id="driverSelects"></div>
       <select name="team" id="teamSelect"></select>
+      <p id="budgetTracker">Total Budget: $0</p>
       <button type="submit">Submit</button>
       <button type="button" onclick="closeFantasyModal()">Cancel</button>
     </form>
