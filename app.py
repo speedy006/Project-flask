@@ -49,6 +49,10 @@ def admin_dashboard():
 def user_dashboard():
     return render_template("user_dashboard.html")
 
+@app.route("/leagues")
+def show_leagues():
+    return render_template("leagues.html")
+
 @app.route("/admin/data/teams")
 def get_teams():
     all_drivers = {d.id: d.to_dict() for d in db.collection("drivers").stream()}
@@ -292,6 +296,50 @@ def create_league():
     db.collection("leagues").add(league_data)
     return jsonify({ "status": "league created", "code": code })
 
+@app.route("/user/create_league", methods=["POST"])
+def create_league_user():
+    uid = get_current_user_id()
+    if not uid:
+        return jsonify({ "error": "Unauthorized" }), 401
+
+    data = request.get_json()
+    name = data.get("name")
+    league_type = data.get("type", "public")
+    team_filter = data.get("team_restriction") or None
+
+    # Generate a join code if private
+    code = None
+    if league_type == "private":
+        import random, string
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            existing = db.collection("leagues").where("code", "==", code).get()
+            if not existing:
+                break
+
+    league_data = {
+        "name": name,
+        "type": league_type,
+        "team_restriction": team_filter,
+        "created_by": uid,
+        "created_at": firestore.SERVER_TIMESTAMP
+    }
+
+    if code:
+        league_data["code"] = code
+
+    doc_ref = db.collection("leagues").add(league_data)
+    league_id = doc_ref[1].id  # newly created league doc ID
+
+    # Auto-add user to league_memberships
+    db.collection("league_memberships").add({
+        "user_id": uid,
+        "league_id": league_id,
+        "joined_at": firestore.SERVER_TIMESTAMP
+    })
+
+    return jsonify({ "status": "league created", "code": code })
+
 @app.route("/admin/update/leagues", methods=["POST", "PUT"])
 def update_league():
     data = request.get_json()
@@ -326,6 +374,34 @@ def update_league():
         db.collection("leagues").add(league_data)
 
     return jsonify({ "status": "success", "code": code }), 200
+
+@app.route("/user/leagues/public")
+def get_public_leagues():
+    public = []
+    for doc in db.collection("leagues").where("type", "==", "public").stream():
+        league = doc.to_dict()
+        league["id"] = doc.id
+        public.append(league)
+    return jsonify(public)
+
+@app.route("/user/leagues/joined")
+def get_joined_leagues():
+    uid = get_current_user_id()
+    if not uid:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    memberships = db.collection("league_memberships").where("user_id", "==", uid).stream()
+    league_ids = [doc.to_dict().get("league_id") for doc in memberships]
+
+    joined = []
+    for lid in league_ids:
+        doc = db.collection("leagues").document(lid).get()
+        if doc.exists:
+            league = doc.to_dict()
+            league["id"] = doc.id
+            joined.append(league)
+
+    return jsonify(joined)
 
 @app.route("/user/fantasy_teams", methods=["GET", "POST"])
 def handle_fantasy_teams():

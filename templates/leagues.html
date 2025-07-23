@@ -3,16 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Dashboard | F1 Esports Fantasy League</title>
+    <title>Leagues | F1 Esports Fantasy League</title>
 
     <!-- Fonts and Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/leagues.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
-    <!-- Custom JS -->
-    <script defer src="{{ url_for('static', filename='js/leagues.js') }}"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
+
+    <!-- Initialize Firebase -->
+    <script>
+      firebase.initializeApp(firebaseConfig);
+    </script>
   </head>
+
   <body>
+    <!-- Header -->
     <header class="app-header">
       <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
       <div class="header-spacer"></div>
@@ -20,21 +31,56 @@
     </header>
 
     <div class="dashboard-wrapper">
-      <!-- Sidebar Navigation -->
+      <!-- Sidebar -->
       <nav class="sidebar">
         <h2>F1 Fantasy</h2>
         <ul>
           <li><a href="/user_dashboard">Home</a></li>
-          <li><a href="/leagues">Leagues</a></li>
+          <li><a href="/leagues" class="active">Leagues</a></li>
           <li><a href="/teams">Teams</a></li>
           <li><a href="/drivers">Drivers</a></li>
           <li><a href="/calendar">Race Calendar</a></li>
         </ul>
       </nav>
 
-      <!-- Main Content -->
+      <!-- Main Sections -->
       <main class="main-content">
+        <!-- Joined and Create -->
+        <section class="user-leagues">
+          <h2>Your Leagues</h2>
+          <button onclick="openCreateLeagueModal()">+ Create Private League</button>
+          <div id="joinedLeaguesList" class="league-grid"></div>
+        </section>
+
+        <!-- Public and Join -->
+        <section class="public-leagues">
+          <h2>Public Leagues</h2>
+          <div id="publicLeaguesGrid" class="league-grid"></div>
+
+          <h2>Join Private League</h2>
+          <form id="joinPrivateForm">
+            <input type="text" placeholder="Enter League Code" name="code" required />
+            <button type="submit">Join</button>
+          </form>
+        </section>
       </main>
     </div>
+
+    <!-- Modal -->
+    <div id="leagueModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Create Private League</h3>
+        <form id="createLeagueForm">
+          <input name="name" placeholder="League Name" required />
+          <select name="team_restriction" id="modalTeamSelect">
+            <option value="">-- No Restriction --</option>
+          </select>
+          <button type="submit">Create</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/leagues.js') }}"></script>
   </body>
 </html>
