@@ -11,7 +11,47 @@ cred = credentials.Certificate(cred_path)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
+def recalculate_fantasy_points_on_startup():
+    teams = db.collection("fantasy_teams").stream()
+    count = 0
+
+    for team_doc in teams:
+        team_data = team_doc.to_dict()
+        driver_ids = team_data.get("drivers", [])
+        constructor_id = team_data.get("team")
+        fantasy_team_name = team_data.get("name", team_doc.id)
+
+        total_points = 0
+        print(f"\nUpdating team: {fantasy_team_name}")
+
+        for did in driver_ids:
+            ddoc = db.collection("drivers").document(did).get()
+            if ddoc.exists:
+                points = ddoc.to_dict().get("points", 0)
+                print(f"  Driver {did}: {points} pts")
+                total_points += points
+            else:
+                print(f"Driver '{did}' not found")
+
+        if constructor_id:
+            cdoc = db.collection("teams").document(constructor_id).get()
+            if cdoc.exists:
+                points = cdoc.to_dict().get("points", 0)
+                print(f"  Constructor {constructor_id}: {points} pts")
+                total_points += points
+            else:
+                print(f"Constructor '{constructor_id}' not found")
+
+        team_doc.reference.update({ "points": total_points })
+        print(f"  → Total updated: {total_points} pts")
+        count += 1
+
+    print(f"\n✅ Recalculated {count} fantasy teams.\n")
+
 app = Flask(__name__, static_folder='static', template_folder='templates')
+
+print("\nBootstrapping fantasy team point recalculation...")
+recalculate_fantasy_points_on_startup()
 
 #Firebase token verification
 def get_current_user_id():
@@ -335,7 +375,8 @@ def create_league_user():
     db.collection("league_memberships").add({
         "user_id": uid,
         "league_id": league_id,
-        "joined_at": firestore.SERVER_TIMESTAMP
+        "joined_at": firestore.SERVER_TIMESTAMP,
+        "team_id": None  #Updated manually
     })
 
     return jsonify({ "status": "league created", "code": code })
@@ -402,6 +443,120 @@ def get_joined_leagues():
             joined.append(league)
 
     return jsonify(joined)
+
+@app.route("/user/update_team_in_league", methods=["POST"])
+def update_team_in_league():
+    uid = get_current_user_id()
+    if not uid:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json()
+    league_id = data.get("league_id")
+    team_id = data.get("team_id")
+
+    # Find membership record
+    membership_docs = db.collection("league_memberships") \
+        .where("user_id", "==", uid) \
+        .where("league_id", "==", league_id).get()
+
+    for doc in membership_docs:
+        doc.reference.update({ "team_id": team_id })
+
+    return jsonify({ "status": "team updated" })
+
+@app.route("/user/leagues/<league_id>/standings")
+def get_league_standings(league_id):
+    members = db.collection("league_memberships") \
+        .where("league_id", "==", league_id).stream()
+
+    standings = []
+    for m in members:
+        mem = m.to_dict()
+        team_id = mem.get("team_id")
+        if not team_id:
+            continue
+
+        team_doc = db.collection("fantasy_teams").document(team_id).get()
+        user_doc = db.collection("users").document(mem["user_id"]).get()
+
+        if team_doc.exists:
+            team = team_doc.to_dict()
+            username = user_doc.to_dict().get("username") if user_doc.exists else mem["user_id"]
+
+            standings.append({
+                "user_id": mem["user_id"],
+                "username": username,
+                "team_name": team.get("name"),
+                "points": team.get("points", 0)
+            })
+
+    standings.sort(key=lambda x: x["points"], reverse=True)
+    return jsonify(standings)
+
+@app.route("/user/leagues/<league_id>/info")
+def get_league_info(league_id):
+    doc = db.collection("leagues").document(league_id).get()
+    if not doc.exists:
+        return jsonify({"error": "League not found"}), 404
+    league = doc.to_dict()
+    league["id"] = doc.id
+    return jsonify(league)
+
+@app.route("/user/join_private_league", methods=["POST"])
+def join_private_league():
+    uid = get_current_user_id()
+    if not uid:
+        return jsonify({ "error": "Unauthorized" }), 401
+
+    data = request.get_json()
+    code = data.get("code")
+
+    # Find league with matching code
+    leagues = db.collection("leagues").where("code", "==", code).get()
+    if not leagues:
+        return jsonify({ "error": "Invalid code" }), 404
+
+    league_doc = leagues[0]
+    league_id = league_doc.id
+
+    # Check if user is already a member
+    existing = db.collection("league_memberships") \
+        .where("user_id", "==", uid) \
+        .where("league_id", "==", league_id).get()
+
+    if existing:
+        return jsonify({ "error": "Already joined" }), 400
+
+    # Add membership
+    db.collection("league_memberships").add({
+        "user_id": uid,
+        "league_id": league_id,
+        "joined_at": firestore.SERVER_TIMESTAMP,
+        "team_id": None
+    })
+
+    return jsonify({ "status": "joined" })
+
+#Load fantasy team options within league
+@app.route("/user/teams")
+def get_user_teams():
+    uid = get_current_user_id()
+    if not uid:
+        return jsonify({ "error": "Unauthorized" }), 401
+
+    teams = []
+    docs = db.collection("fantasy_teams").where("user_id", "==", uid).stream()
+
+    for doc in docs:
+        team = doc.to_dict()
+        team["id"] = doc.id
+        teams.append({
+            "id": team["id"],
+            "name": team.get("name"),
+            "points": team.get("points", 0)
+        })
+
+    return jsonify(teams)
 
 @app.route("/user/fantasy_teams", methods=["GET", "POST"])
 def handle_fantasy_teams():

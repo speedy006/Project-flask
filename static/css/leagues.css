@@ -112,6 +112,26 @@ body {
   margin-bottom: 16px;
 }
 
+.create-league-btn {
+  display: inline-block;
+  background-color: #EA454C;
+  color: white;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.create-league-btn:hover {
+  background-color: #c63841;
+  transform: scale(1.02);
+}
+
 /* Section styles */
 .user-leagues,
 .public-leagues {
@@ -132,6 +152,80 @@ body {
 
 .user-leagues button:hover {
   background-color: #c63841;
+}
+
+.league-container {
+  display: flex;
+  gap: 40px;
+}
+
+.league-list-pane {
+  flex: 1;
+}
+
+.league-detail-pane {
+  flex: 1;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#leagueStandingsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+}
+
+#leagueStandingsTable th,
+#leagueStandingsTable td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Improve league card hover and click feedback */
+.league-card {
+  background-color: #f2f2f2;
+  padding: 18px;
+  border-radius: 8px;
+  width: 240px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.league-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background-color: #eaeaea;
+}
+
+/* Optional: highlight active league card */
+.league-card.active {
+  border: 2px solid #EA454C;
+  background-color: #fff0f1;
+}
+
+/* Style the Change Team button in the detail pane */
+.league-detail-pane button {
+  background-color: #EA454C;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.league-detail-pane button:hover {
+  background-color: #c63841;
+  transform: scale(1.02);
 }
 
 /* League cards layout */
@@ -256,6 +350,44 @@ body {
 }
 
 .modal-content form button:hover {
+  background-color: #c63841;
+}
+
+#changeTeamModal .modal-content {
+  padding: 32px;
+}
+
+#changeTeamModal h3 {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+#teamDropdown {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+}
+
+#changeTeamForm button {
+  width: 100%;
+  background-color: #EA454C;
+  color: #fff;
+  padding: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#changeTeamForm button:hover {
   background-color: #c63841;
 }
 

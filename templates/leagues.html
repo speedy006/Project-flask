@@ -45,28 +45,45 @@
 
       <!-- Main Sections -->
       <main class="main-content">
-        <!-- Joined and Create -->
-        <section class="user-leagues">
-          <h2>Your Leagues</h2>
-          <button onclick="openCreateLeagueModal()">+ Create Private League</button>
-          <div id="joinedLeaguesList" class="league-grid"></div>
-        </section>
+        <div class="league-container">
+          <!-- Left: League List -->
+          <section class="league-list-pane">
+            <h2>Your Leagues</h2>
+            <button class="create-league-btn" onclick="openCreateLeagueModal()">+ Create Private League</button>
+            <div id="joinedLeaguesList" class="league-grid"></div>
 
-        <!-- Public and Join -->
-        <section class="public-leagues">
-          <h2>Public Leagues</h2>
-          <div id="publicLeaguesGrid" class="league-grid"></div>
+            <h2>Public Leagues</h2>
+            <div id="publicLeaguesGrid" class="league-grid"></div>
 
-          <h2>Join Private League</h2>
-          <form id="joinPrivateForm">
-            <input type="text" placeholder="Enter League Code" name="code" required />
-            <button type="submit">Join</button>
-          </form>
-        </section>
+            <h2>Join Private League</h2>
+            <form id="joinPrivateForm">
+              <input type="text" placeholder="Enter League Code" name="code" required />
+              <button type="submit">Join</button>
+            </form>
+          </section>
+
+          <!-- Right: League Details -->
+          <section class="league-detail-pane">
+            <div id="selectedLeagueDetails" style="display: none;">
+              <h2 id="leagueNameHeading">League Details</h2>
+              <div id="leagueJoinCode" style="font-weight: bold; margin-bottom: 8px;"></div>
+              <button onclick="openChangeTeamModal()">Change Team</button>
+              <div id="leagueRestrictionLabel"></div>
+              <h3>Standings</h3>
+              <table id="leagueStandingsTable">
+                <thead><tr><th>User</th><th>Team</th><th>Points</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div id="noLeagueSelected">
+              <p>Select a league to view details.</p>
+            </div>
+          </section>
+        </div>
       </main>
     </div>
 
-    <!-- Modal -->
+    <!-- Create League Modal -->
     <div id="leagueModal" class="modal">
       <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
@@ -77,6 +94,18 @@
             <option value="">-- No Restriction --</option>
           </select>
           <button type="submit">Create</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Change Team Modal -->
+    <div id="changeTeamModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeChangeTeamModal()">&times;</span>
+        <h3>Choose Your Team</h3>
+        <form id="changeTeamForm">
+          <select name="team_id" id="teamDropdown" required></select>
+          <button type="submit">Update</button>
         </form>
       </div>
     </div>
