@@ -171,7 +171,7 @@ function loadRaceResults() {
           <h3>${race.name}</h3>
           <p>Date: ${race.date}</p>
         `;
-        card.onclick = () => openRaceModal(race.id); // ✅ make card clickable
+        card.onclick = () => openRaceModal(race.id);
         grid.appendChild(card);
       });
     });
@@ -187,7 +187,7 @@ firebase.auth().onAuthStateChanged(async user => {
   const token = await user.getIdToken();
   attachFantasyForm(token);
   loadFantasyTeams(token);
-  loadRaceResults(); // ← Add this line
+  loadRaceResults();
 });
 
 function openRaceModal(raceId) {
@@ -207,7 +207,7 @@ function openRaceModal(raceId) {
         li.textContent = `${i + 1}. ${d.name}: ${d.points} pts`;
         li.style.fontSize = "13px";
         li.style.lineHeight = "1.4";
-        if (i < 10) li.style.fontWeight = "bold"; // Optional: highlight podium
+        if (i < 10) li.style.fontWeight = "bold"; //Highlight drivers with points
         list.appendChild(li);
       });
     });

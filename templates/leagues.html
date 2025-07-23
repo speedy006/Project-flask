@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Dashboard | F1 Esports Fantasy League</title>
+
+    <!-- Fonts and Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/leagues.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+    <!-- Custom JS -->
+    <script defer src="{{ url_for('static', filename='js/leagues.js') }}"></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
+      <div class="header-spacer"></div>
+      <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile" class="header-profile">
+    </header>
+
+    <div class="dashboard-wrapper">
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar">
+        <h2>F1 Fantasy</h2>
+        <ul>
+          <li><a href="/user_dashboard">Home</a></li>
+          <li><a href="/leagues">Leagues</a></li>
+          <li><a href="/teams">Teams</a></li>
+          <li><a href="/drivers">Drivers</a></li>
+          <li><a href="/calendar">Race Calendar</a></li>
+        </ul>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+      </main>
+    </div>
+  </body>
+</html>

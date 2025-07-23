@@ -261,23 +261,71 @@ def get_leagues():
         leagues.append(league)
     return jsonify(leagues)
 
+@app.route("/admin/create_league", methods=["POST"])
+def create_league():
+    data = request.get_json()
+    name = data.get("name")
+    league_type = data.get("type", "public")
+    team_filter = data.get("team_restriction") or None
+
+    # Generate a unique code for private leagues
+    code = None
+    if league_type == "private":
+        import random, string
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            existing = db.collection("leagues").where("code", "==", code).get()
+            if not existing:
+                break
+
+    league_data = {
+        "name": name,
+        "type": league_type,
+        "team_restriction": team_filter,
+        "created_by": "admin",  # can also grab from session
+        "created_at": firestore.SERVER_TIMESTAMP
+    }
+
+    if code:
+        league_data["code"] = code
+
+    db.collection("leagues").add(league_data)
+    return jsonify({ "status": "league created", "code": code })
+
 @app.route("/admin/update/leagues", methods=["POST", "PUT"])
 def update_league():
     data = request.get_json()
     doc_id = data.get("id")
+    league_type = data.get("type", "public")
+    team_filter = data.get("team_restriction") or None
+
+    # Generate join code if creating a new private league
+    code = None
+    if request.method == "POST" and league_type == "private":
+        import random, string
+        while True:
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            existing = db.collection("leagues").where("code", "==", code).get()
+            if not existing:
+                break
 
     league_data = {
         "name": data.get("name"),
-        "type": data.get("type"),  # "public" or "private"
-        "users": [u.strip() for u in data.get("users", "").split(",")]
+        "type": league_type,
+        "team_restriction": team_filter,
+        "created_by": "admin",  # or pull from session if applicable
+        "created_at": firestore.SERVER_TIMESTAMP
     }
+
+    if code:
+        league_data["code"] = code
 
     if request.method == "PUT" and doc_id:
         db.collection("leagues").document(doc_id).set(league_data)
     else:
         db.collection("leagues").add(league_data)
 
-    return jsonify({"status": "success"}), 200
+    return jsonify({ "status": "success", "code": code }), 200
 
 @app.route("/user/fantasy_teams", methods=["GET", "POST"])
 def handle_fantasy_teams():

@@ -109,23 +109,35 @@ body {
   background-color: #eaeaea;
 }
 
-/* Modal */
 .modal {
   display: none;
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(30, 30, 30, 0.4);
   justify-content: center;
   align-items: center;
+  z-index: 999;
 }
 
 .modal-content {
-  background-color: white;
-  padding: 30px;
-  border-radius: 8px;
-  width: 400px;
+  background-color: #ffffff;
+  padding: 32px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   position: relative;
+  font-family: 'Poppins', sans-serif;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+#modalTitle {
+  margin-bottom: 16px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  color: #333;
 }
 
 .close {
@@ -133,5 +145,54 @@ body {
   top: 10px;
   right: 15px;
   font-size: 24px;
+  color: #555;
   cursor: pointer;
+}
+
+#modalForm input,
+#modalForm select,
+#modalForm textarea {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  transition: border-color 0.2s ease;
+}
+
+#modalForm input:focus,
+#modalForm select:focus,
+#modalForm textarea:focus {
+  border-color: #EA454C;
+  outline: none;
+}
+
+#modalForm button[type="submit"] {
+  width: 100%;
+  background-color: #EA454C;
+  color: #fff;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#modalForm button[type="submit"]:hover {
+  background-color: #c63841;
+}
+
+@keyframes fadeIn {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
