@@ -43,14 +43,14 @@ def recalculate_fantasy_points_on_startup():
                 print(f"Constructor '{constructor_id}' not found")
 
         team_doc.reference.update({ "points": total_points })
-        print(f"  → Total updated: {total_points} pts")
+        print(f" Total updated: {total_points} pts")
         count += 1
 
-    print(f"\n✅ Recalculated {count} fantasy teams.\n")
+    print(f"\nRecalculated {count} fantasy teams.\n")
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
-print("\nBootstrapping fantasy team point recalculation...")
+print("\nFantasy team point recalculation...")
 recalculate_fantasy_points_on_startup()
 
 #Firebase token verification
@@ -127,11 +127,11 @@ def update_team():
     score = safe_int(data.get("score"), 0)
     price = safe_int(data.get("price"), 0)
 
-    # Get or create the team document reference
+    #Get or create the team document reference
     team_ref = db.collection("teams").document(doc_id) if doc_id else db.collection("teams").document()
     team_id = team_ref.id
 
-    # Validate drivers: allow unassigned or already assigned to this team only
+    #Validate drivers
     conflicts = []
     for d_id in driver_ids:
         d_doc = db.collection("drivers").document(d_id).get()
@@ -153,13 +153,13 @@ def update_team():
         "price": price
     }
 
-    # Update or create the team document
+    #Update or create the team document
     if doc_id:
         team_ref.update(team_data)
     else:
         team_ref.set(team_data)
 
-    # Assign team_id to drivers
+    #Assign team_id to drivers
     for d_id in driver_ids:
         db.collection("drivers").document(d_id).update({"team_id": team_id})
 
@@ -284,7 +284,7 @@ def get_race_results(race_id):
     race = race_doc.to_dict()
     all_drivers = {d.id: d.to_dict().get("name", "Unknown") for d in db.collection("drivers").stream()}
 
-    # Combine driver names with points from this race
+    #Combine driver names with points from this race
     results = []
     for driver_id, name in all_drivers.items():
         points = race.get("results", {}).get(driver_id, 0)
@@ -312,7 +312,7 @@ def create_league():
     league_type = data.get("type", "public")
     team_filter = data.get("team_restriction") or None
 
-    # Generate a unique code for private leagues
+    #Generate a unique code for private leagues
     code = None
     if league_type == "private":
         import random, string
@@ -326,7 +326,7 @@ def create_league():
         "name": name,
         "type": league_type,
         "team_restriction": team_filter,
-        "created_by": "admin",  # can also grab from session
+        "created_by": "admin",
         "created_at": firestore.SERVER_TIMESTAMP
     }
 
@@ -347,7 +347,7 @@ def create_league_user():
     league_type = data.get("type", "public")
     team_filter = data.get("team_restriction") or None
 
-    # Generate a join code if private
+    #Generate a join code if private
     code = None
     if league_type == "private":
         import random, string
@@ -369,9 +369,9 @@ def create_league_user():
         league_data["code"] = code
 
     doc_ref = db.collection("leagues").add(league_data)
-    league_id = doc_ref[1].id  # newly created league doc ID
+    league_id = doc_ref[1].id  #Newly created league doc ID
 
-    # Auto-add user to league_memberships
+    #Auto-add user to league_memberships
     db.collection("league_memberships").add({
         "user_id": uid,
         "league_id": league_id,
@@ -388,7 +388,7 @@ def update_league():
     league_type = data.get("type", "public")
     team_filter = data.get("team_restriction") or None
 
-    # Generate join code if creating a new private league
+    #Generate join code if creating a new private league
     code = None
     if request.method == "POST" and league_type == "private":
         import random, string
@@ -402,7 +402,7 @@ def update_league():
         "name": data.get("name"),
         "type": league_type,
         "team_restriction": team_filter,
-        "created_by": "admin",  # or pull from session if applicable
+        "created_by": "admin",
         "created_at": firestore.SERVER_TIMESTAMP
     }
 
@@ -454,7 +454,7 @@ def update_team_in_league():
     league_id = data.get("league_id")
     team_id = data.get("team_id")
 
-    # Find membership record
+    #Find membership record
     membership_docs = db.collection("league_memberships") \
         .where("user_id", "==", uid) \
         .where("league_id", "==", league_id).get()
@@ -511,7 +511,7 @@ def join_private_league():
     data = request.get_json()
     code = data.get("code")
 
-    # Find league with matching code
+    #Find league with matching code
     leagues = db.collection("leagues").where("code", "==", code).get()
     if not leagues:
         return jsonify({ "error": "Invalid code" }), 404
@@ -519,7 +519,7 @@ def join_private_league():
     league_doc = leagues[0]
     league_id = league_doc.id
 
-    # Check if user is already a member
+    #Check if user is already a member
     existing = db.collection("league_memberships") \
         .where("user_id", "==", uid) \
         .where("league_id", "==", league_id).get()
@@ -527,7 +527,7 @@ def join_private_league():
     if existing:
         return jsonify({ "error": "Already joined" }), 400
 
-    # Add membership
+    #Add membership
     db.collection("league_memberships").add({
         "user_id": uid,
         "league_id": league_id,
@@ -568,7 +568,7 @@ def handle_fantasy_teams():
         teams_ref = db.collection("fantasy_teams").where("user_id", "==", user_id).stream()
         teams = []
 
-        # Fetch readable names
+        #Fetch readable names
         drivers = {d.id: d.to_dict().get("name") for d in db.collection("drivers").stream()}
         team_map = {t.id: t.to_dict().get("name") for t in db.collection("teams").stream()}
 
@@ -581,7 +581,7 @@ def handle_fantasy_teams():
 
         return jsonify(teams)
 
-    else:  # POST
+    else:
         data = request.get_json()
         name = data.get("name", "").strip()
         driver_ids = data.get("drivers", [])

@@ -13,7 +13,7 @@ async function getUnassignedDrivers() {
   return allDrivers.filter(d => !d.team_id);
 }
 
-// Load and render content by section
+//Load render content by section
 async function loadSection(section) {
   const response = await fetch(`/admin/data/${section}`);
   const data = await response.json();
@@ -30,7 +30,7 @@ async function loadSection(section) {
   });
 }
 
-// Render driver, race, and league cards
+//Render driver, race, and league cards
 function renderBlockContent(section, item) {
   switch (section) {
     case 'teams':
@@ -57,7 +57,7 @@ function renderBlockContent(section, item) {
   }
 }
 
-// Modal setup
+//Modal setup
 function openForm(section, data = null) {
   modal.style.display = "flex";
   modalForm.innerHTML = "";
@@ -147,14 +147,14 @@ function openForm(section, data = null) {
       });
 
   } else if (section === 'leagues') {
-    // League Name
+    //League Name
     const nameInput = document.createElement('input');
     nameInput.name = 'name';
     nameInput.placeholder = 'League Name';
     nameInput.value = data?.name || '';
     modalForm.appendChild(nameInput);
 
-    // League Type
+    //League Type
     const typeSelect = document.createElement('select');
     typeSelect.name = 'type';
 
@@ -167,7 +167,7 @@ function openForm(section, data = null) {
     });
     modalForm.appendChild(typeSelect);
 
-    // Team Restriction
+    //Team Restriction
     const teamSelect = document.createElement('select');
     teamSelect.name = 'team_restriction';
     teamSelect.id = 'modalTeamSelect';
@@ -227,7 +227,7 @@ function openForm(section, data = null) {
     };
 
   } else {
-    // Default handling for drivers and races
+    //Default handling for drivers and races
     fields[section].forEach(field => {
       const input = document.createElement(field === 'results' ? 'textarea' : 'input');
       input.placeholder = field.charAt(0).toUpperCase() + field.slice(1);

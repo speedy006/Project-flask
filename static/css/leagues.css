@@ -99,7 +99,7 @@ body {
   font-weight: 700;
 }
 
-/* Main content sections */
+/* Main content */
 .main-content {
   flex: 1;
   padding: 40px;
@@ -185,7 +185,6 @@ body {
   text-align: left;
 }
 
-/* Improve league card hover and click feedback */
 .league-card {
   background-color: #f2f2f2;
   padding: 18px;
@@ -202,13 +201,11 @@ body {
   background-color: #eaeaea;
 }
 
-/* Optional: highlight active league card */
 .league-card.active {
   border: 2px solid #EA454C;
   background-color: #fff0f1;
 }
 
-/* Style the Change Team button in the detail pane */
 .league-detail-pane button {
   background-color: #EA454C;
   color: white;
@@ -391,7 +388,6 @@ body {
   background-color: #c63841;
 }
 
-/* Animation */
 @keyframes fadeIn {
   from {
     transform: translateY(10px);

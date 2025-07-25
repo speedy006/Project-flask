@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Leagues | F1 Esports Fantasy League</title>
 
-    <!-- Fonts and Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/leagues.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
@@ -13,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-    <!-- Firebase Config -->
     <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 
     <!-- Initialize Firebase -->
@@ -23,7 +21,6 @@
   </head>
 
   <body>
-    <!-- Header -->
     <header class="app-header">
       <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
       <div class="header-spacer"></div>
@@ -31,7 +28,6 @@
     </header>
 
     <div class="dashboard-wrapper">
-      <!-- Sidebar -->
       <nav class="sidebar">
         <h2>F1 Fantasy</h2>
         <ul>
@@ -43,7 +39,6 @@
         </ul>
       </nav>
 
-      <!-- Main Sections -->
       <main class="main-content">
         <div class="league-container">
           <!-- Left: League List -->

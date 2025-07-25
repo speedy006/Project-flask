@@ -6,16 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login | F1 Esports Fantasy League</title>
 
-    <!-- Config file -->
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
     <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 
-    <!-- CSS file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 
-    <!-- Extra fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Sansita+One&family=Poppins&display=swap" rel="stylesheet">
   </head>
 
@@ -59,9 +56,9 @@
     </main>
     <script>
       const auth = firebase.auth();
-      const db = firebase.firestore(); // Requires Firestore SDK if using Firestore
+      const db = firebase.firestore(); //Requires Firestore SDK
 
-      // SIGN IN
+      //SIGN IN
       function login() {
         console.log("Login button clicked");
         const email = document.getElementById("email").value.trim();
@@ -84,7 +81,7 @@
           });
       }
 
-      // SIGN UP
+      //SIGN UP
       function signup() {
         console.log("Signup button clicked");
         const email = document.getElementById("email").value.trim();
@@ -101,10 +98,10 @@
             const user = userCredential.user;
             const uid = user.uid;
 
-            // Generate username from email
+            //Generate username from email
             const username = email.split("@")[0];
 
-            // Save user profile to Firestore (or send to Flask backend)
+            //Save user profile to Firestore
             fetch("/assign_user_role", {
               method: "POST",
               headers: {

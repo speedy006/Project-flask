@@ -1,6 +1,6 @@
 let selectedLeagueId = null;
 
-// Page initialization
+//Page initialization
 window.onload = () => {
   firebase.auth().onAuthStateChanged(user => {
     loadPublicLeagues();
@@ -15,7 +15,7 @@ window.onload = () => {
   });
 };
 
-// Modal setup
+//Modal setup
 const modal = document.getElementById('leagueModal');
 const modalForm = document.getElementById('createLeagueForm');
 
@@ -27,7 +27,7 @@ function closeModal() {
   modal.style.display = "none";
 }
 
-// Load dynamic team options
+//Load dynamic team options
 function loadTeamOptionsForModal() {
   fetch("/admin/data/teams")
     .then(res => res.json())
@@ -42,7 +42,7 @@ function loadTeamOptionsForModal() {
     });
 }
 
-// Create private league
+//Create private league
 modalForm.onsubmit = async e => {
   e.preventDefault();
   const form = e.target;
@@ -81,7 +81,7 @@ modalForm.onsubmit = async e => {
   }
 };
 
-// Display public leagues
+//Display public leagues
 function loadPublicLeagues() {
   fetch("/user/leagues/public")
     .then(res => res.json())
@@ -101,7 +101,7 @@ function loadPublicLeagues() {
     });
 }
 
-// Display joined leagues
+//Display joined leagues
 async function loadJoinedLeagues() {
   const user = firebase.auth().currentUser;
   if (!user) {
@@ -138,7 +138,7 @@ async function loadJoinedLeagues() {
   }
 }
 
-// Join private league by code
+//Join private league by code
 document.getElementById("joinPrivateForm").onsubmit = async e => {
   e.preventDefault();
   const code = e.target.code.value;
@@ -169,12 +169,12 @@ document.getElementById("joinPrivateForm").onsubmit = async e => {
   }
 };
 
-// Display selected league details
+//Display selected league details
 async function showLeagueDetails(league) {
   document.getElementById("noLeagueSelected").style.display = "none";
   document.getElementById("selectedLeagueDetails").style.display = "block";
 
-  // Fetch latest league info if code wasn't included
+  //Fetch latest league info if code wasn't included
   if (!league.code) {
     const res = await fetch(`/user/leagues/${league.id}/info`);
     league = await res.json();
@@ -184,7 +184,7 @@ async function showLeagueDetails(league) {
   document.getElementById("leagueRestrictionLabel").textContent =
     `Restriction: ${league.team_restriction || "None"}`;
 
-  // Show join code if league is private
+  //Show join code if league is private
   const codeContainer = document.getElementById("leagueJoinCode");
   if (league.type === "private" && league.code) {
     codeContainer.style.display = "block";
@@ -193,7 +193,7 @@ async function showLeagueDetails(league) {
     codeContainer.style.display = "none";
   }
 
-  // Load standings
+  //Load standings
   const res = await fetch(`/user/leagues/${league.id}/standings`);
   const data = await res.json();
 
@@ -208,7 +208,7 @@ async function showLeagueDetails(league) {
   }
 }
 
-// Change team modal setup
+//Change team modal setup
 const changeTeamModal = document.getElementById("changeTeamModal");
 const teamForm = document.getElementById("changeTeamForm");
 
@@ -221,7 +221,7 @@ function closeChangeTeamModal() {
   changeTeamModal.style.display = "none";
 }
 
-// Load user's fantasy teams into dropdown
+//Load user's fantasy teams into dropdown
 async function loadUserFantasyTeams() {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -243,7 +243,7 @@ async function loadUserFantasyTeams() {
   });
 }
 
-// Submit team change to backend
+//Submit team change to backend
 teamForm.onsubmit = async e => {
   e.preventDefault();
   const form = e.target;

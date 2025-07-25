@@ -1,9 +1,9 @@
-// Live price maps
+//Live price maps
 let driverPriceMap = {};
 let teamPriceMap = {};
 let currentUser = null;
 
-// Ensure user is authenticated before loading teams
+//Ensure user is authenticated before loading teams
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) {
     window.location.href = "/";
@@ -16,7 +16,7 @@ firebase.auth().onAuthStateChanged(async user => {
   loadFantasyTeams(token);
 });
 
-// Load fantasy teams for the user
+//Load fantasy teams for the user
 async function loadFantasyTeams(token) {
   const res = await fetch("/user/fantasy_teams", {
     headers: {
@@ -64,7 +64,7 @@ async function loadFantasyTeams(token) {
   });
 }
 
-// Attach form handler
+//Attach form handler
 function attachFantasyForm(token) {
   const form = document.getElementById("fantasyForm");
   if (!form) return;
@@ -97,7 +97,7 @@ function attachFantasyForm(token) {
   };
 }
 
-// Open modal and load driver/team options
+//Open modal and load driver/team options
 function openFantasyModal() {
   document.getElementById("fantasyModal").style.display = "flex";
   const selects = document.getElementById("driverSelects");
@@ -132,7 +132,7 @@ function closeFantasyModal() {
   document.getElementById("fantasyModal").style.display = "none";
 }
 
-// Budget tracker
+//Budget tracker
 function updateBudgetTracker() {
   const form = document.getElementById("fantasyForm");
   let total = 0;
@@ -199,7 +199,7 @@ function openRaceModal(raceId) {
       const list = document.getElementById("raceDriverList");
       list.innerHTML = "";
 
-      // Sort drivers by points descending
+      //Sort drivers by points descending
       data.results.sort((a, b) => b.points - a.points);
 
       data.results.forEach((d, i) => {

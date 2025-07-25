@@ -5,15 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>User Dashboard | F1 Esports Fantasy League</title>
 
-  <!-- Fonts and Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/user_dashboard.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
-  <!-- Firebase SDKs (Compat build for browser use) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-  <!-- Firebase Config -->
   <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 
   <!-- Firebase Initialization -->
@@ -21,7 +19,6 @@
     firebase.initializeApp(firebaseConfig);
   </script>
 
-  <!-- Custom JS -->
   <script defer src="{{ url_for('static', filename='js/user_dashboard.js') }}"></script>
 </head>
 <body>
@@ -32,7 +29,6 @@
   </header>
 
   <div class="dashboard-wrapper">
-    <!-- Sidebar Navigation -->
     <nav class="sidebar">
       <h2>F1 Fantasy</h2>
       <ul>
@@ -44,7 +40,6 @@
       </ul>
     </nav>
 
-    <!-- Main Content -->
     <main class="main-content">
       <!-- Fantasy Teams -->
       <section class="fantasy-teams">
