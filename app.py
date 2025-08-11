@@ -93,6 +93,10 @@ def user_dashboard():
 def show_leagues():
     return render_template("leagues.html")
 
+@app.route("/user_data")
+def user_data():
+    return render_template("user_data.html")
+
 @app.route("/admin/data/teams")
 def get_teams():
     all_drivers = {d.id: d.to_dict() for d in db.collection("drivers").stream()}
