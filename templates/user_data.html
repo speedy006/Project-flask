@@ -11,33 +11,38 @@
     <script defer src="{{ url_for('static', filename='js/user_data.js') }}"></script>
   </head>
   <body>
+    <header class="app-header">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="header-logo">
+      <div class="header-spacer"></div>
+      <img src="{{ url_for('static', filename='images/profile.jpg') }}" alt="Profile" class="header-profile">
+    </header>
+
     <div class="dashboard-wrapper">
       <nav class="sidebar">
         <h2>F1 Fantasy</h2>
         <ul>
-          <li><a href="#teams">Teams</a></li>
-          <li><a href="#drivers">Drivers</a></li>
-          <li><a href="#calendar">Race Calendar</a></li>
+          <li><a href="/user_dashboard">Home</a></li>
+          <li><a href="/leagues">Leagues</a></li>
+          <li><a href="/user_data#teams">Teams</a></li>
+          <li><a href="/user_data#drivers">Drivers</a></li>
+          <li><a href="/user_data#calendar">Race Calendar</a></li>
         </ul>
       </nav>
 
       <main class="main-content">
-        <!-- Teams Section -->
         <section id="teams">
           <h2>Teams</h2>
-          <div class="grid-section" id="teamList"></div>
+          <div class="info-grid" id="teamsGrid"></div>
         </section>
 
-        <!-- Drivers Section -->
         <section id="drivers">
           <h2>Drivers</h2>
-          <div class="grid-section" id="driverList"></div>
+          <div class="info-grid" id="driversGrid"></div>
         </section>
 
-        <!-- Race Calendar Section -->
         <section id="calendar">
           <h2>Race Calendar</h2>
-          <div class="grid-section" id="calendarList"></div>
+          <div class="info-grid" id="calendarGrid"></div>
         </section>
       </main>
     </div>
