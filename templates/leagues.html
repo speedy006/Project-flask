@@ -11,6 +11,7 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script src="{{ url_for('static', filename='js/firebase-config.js') }}"></script>
 
@@ -106,6 +107,20 @@
       </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeProfileModal()">&times;</span>
+        <h3>User Profile</h3>
+        <div id="profileInfo">
+          <p><strong>Username:</strong> <span id="profileUsername">Loading...</span></p>
+          <p><strong>Email:</strong> <span id="profileEmail">Loading...</span></p>
+        </div>
+        <button onclick="logoutUser()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+
     <script src="{{ url_for('static', filename='js/leagues.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/profile_modal.js') }}"></script>
   </body>
 </html>
