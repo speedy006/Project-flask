@@ -247,3 +247,36 @@ body {
     opacity: 1;
   }
 }
+
+/* Modal overlay */
+#modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: block;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 40px 20px;
+}
+
+/* Modal content */
+#modalForm {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-height: 50vh;
+  width: 90%;
+  max-width: 800px;
+  overflow-y: auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  margin: auto;
+}
+
+#modalLoading {
+  font-weight: bold;
+  font-size: 14px;
+  color: #555;
+}

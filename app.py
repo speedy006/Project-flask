@@ -231,12 +231,7 @@ def update_race():
     race_id = data.get("id") or None
     race_name = data.get("name", "").strip()
     race_date = data.get("date", "").strip()
-
-    #Parse the 'results' field from JSON string to dict
-    try:
-        name_results = json.loads(data.get("results", "{}"))
-    except json.JSONDecodeError:
-        return jsonify({"error": "Invalid JSON format in results"}), 400
+    name_results = data.get("results", {})  # Already a dict
 
     if not race_name or not race_date or not name_results:
         return jsonify({"error": "Missing race data"}), 400
@@ -244,14 +239,12 @@ def update_race():
     race_ref = db.collection("races").document(race_id) if race_id else db.collection("races").document()
     driver_results = {}
 
-    for name, points in name_results.items():
-        query = db.collection("drivers").where("name", ">=", name).where("name", "<=", name + "\uf8ff").limit(1).get()
-        if query:
-            driver_doc = query[0]
-            driver_id = driver_doc.id
+    for driver_id, points in name_results.items():
+        driver_doc = db.collection("drivers").document(driver_id).get()
+        if driver_doc.exists:
             driver_data = driver_doc.to_dict()
-
             new_total = driver_data.get("points", 0) + int(points)
+
             db.collection("drivers").document(driver_id).update({
                 "points": new_total,
                 f"races.{race_ref.id}": int(points)
@@ -259,16 +252,16 @@ def update_race():
 
             driver_results[driver_id] = int(points)
         else:
-            print(f"Driver '{name}' not found")
+            print(f"Driver '{driver_id}' not found")
 
-    #Save race with resolved driver IDs
+    # Save race with resolved driver IDs
     race_ref.set({
         "name": race_name,
         "date": race_date,
         "results": driver_results
     })
 
-    #Recalculate team scores
+    # Recalculate team scores
     for team_doc in db.collection("teams").stream():
         team_data = team_doc.to_dict()
         total_score = 0
@@ -277,7 +270,7 @@ def update_race():
             total_score += driver.get("points", 0)
         db.collection("teams").document(team_doc.id).update({"score": total_score})
 
-    return jsonify({"status": "Race recorded with driver names"}), 200
+    return jsonify({"status": "Race recorded with driver IDs"}), 200
 
 @app.route("/user/race_results/<race_id>")
 def get_race_results(race_id):
