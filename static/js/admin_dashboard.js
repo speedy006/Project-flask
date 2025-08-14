@@ -351,7 +351,7 @@ function openForm(section, data = null) {
   }
 
   else {
-    //Default section (e.g. drivers)
+    //Default section 
     fields[section].forEach(field => {
       const input = document.createElement(field === 'results' ? 'textarea' : 'input');
       input.placeholder = field.charAt(0).toUpperCase() + field.slice(1);

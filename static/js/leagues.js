@@ -209,13 +209,13 @@ async function showLeagueDetails(league) {
   noLeagueSelected.style.display = "none";
   detailsSection.style.display = "block";
 
-  // Fetch latest league info if code wasn't included
+  //Fetch latest league info if code wasn't included
   if (!league.code) {
     const res = await fetch(`/user/leagues/${league.id}/info`);
     league = await res.json();
   }
 
-  // Check if user has already joined this league
+  //Check if user has already joined this league
   let hasJoined = false;
   if (user) {
     const token = await user.getIdToken();
@@ -227,12 +227,12 @@ async function showLeagueDetails(league) {
     hasJoined = Array.isArray(joinedLeagues) && joinedLeagues.some(l => l.id === league.id);
   }
 
-  // If public and not joined, show only the join button
+  //If public and not joined, show only the join button
   if (league.type === "public" && !hasJoined) {
     joinBtn.style.display = "inline-block";
     joinBtn.onclick = () => joinPublicLeague(league.id);
 
-    // Hide other details
+    //Hide other details
     document.getElementById("leagueNameHeading").textContent = "";
     document.getElementById("leagueRestrictionLabel").textContent = "";
     codeContainer.style.display = "none";
@@ -240,7 +240,7 @@ async function showLeagueDetails(league) {
     return;
   }
 
-  // Otherwise show full league details
+  //Otherwise show full league details
   joinBtn.style.display = "none";
   document.getElementById("leagueNameHeading").textContent = league.name;
   document.getElementById("leagueRestrictionLabel").textContent =
@@ -253,7 +253,7 @@ async function showLeagueDetails(league) {
     codeContainer.style.display = "none";
   }
 
-  // Load standings
+  //Load standings
   const res = await fetch(`/user/leagues/${league.id}/standings`);
   const data = await res.json();
 

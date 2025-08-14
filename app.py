@@ -140,7 +140,7 @@ def update_team():
     if not isinstance(driver_ids, list):
         return jsonify({"error": "Invalid driver format"}), 400
 
-    # Safely parse score and price
+    #Safely parse score and price
     def safe_int(val, default=0):
         try:
             return int(str(val).strip())
@@ -270,14 +270,14 @@ def update_race():
         else:
             print(f"Driver '{driver_id}' not found")
 
-    # Save race with resolved driver IDs
+    #Save race with resolved driver IDs
     race_ref.set({
         "name": race_name,
         "date": race_date,
         "results": driver_results
     })
 
-    # Recalculate team scores
+    #Recalculate team scores
     for team_doc in db.collection("teams").stream():
         team_data = team_doc.to_dict()
         total_score = 0
@@ -565,7 +565,7 @@ def join_public_league():
     if not league_id:
         return jsonify({"error": "Missing league_id"}), 400
 
-    # Check if league exists and is public
+    #Check if league exists and is public
     league_doc = db.collection("leagues").document(league_id).get()
     if not league_doc.exists:
         return jsonify({"error": "League not found"}), 404
@@ -574,7 +574,7 @@ def join_public_league():
     if league.get("type") != "public":
         return jsonify({"error": "League is not public"}), 403
 
-    # Check if user is already a member
+    #Check if user is already a member
     existing = db.collection("league_memberships")\
         .where("user_id", "==", uid)\
         .where("league_id", "==", league_id)\
@@ -583,7 +583,7 @@ def join_public_league():
     if any(existing):
         return jsonify({"status": "already joined"})
 
-    # Add membership
+    #Add membership
     db.collection("league_memberships").add({
         "user_id": uid,
         "league_id": league_id
