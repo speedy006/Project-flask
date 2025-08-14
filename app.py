@@ -534,6 +534,43 @@ def join_private_league():
 
     return jsonify({ "status": "joined" })
 
+@app.route("/user/join_public_league", methods=["POST"])
+def join_public_league():
+    uid = get_current_user_id()
+    if not uid:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json()
+    league_id = data.get("league_id")
+    if not league_id:
+        return jsonify({"error": "Missing league_id"}), 400
+
+    # Check if league exists and is public
+    league_doc = db.collection("leagues").document(league_id).get()
+    if not league_doc.exists:
+        return jsonify({"error": "League not found"}), 404
+
+    league = league_doc.to_dict()
+    if league.get("type") != "public":
+        return jsonify({"error": "League is not public"}), 403
+
+    # Check if user is already a member
+    existing = db.collection("league_memberships")\
+        .where("user_id", "==", uid)\
+        .where("league_id", "==", league_id)\
+        .stream()
+
+    if any(existing):
+        return jsonify({"status": "already joined"})
+
+    # Add membership
+    db.collection("league_memberships").add({
+        "user_id": uid,
+        "league_id": league_id
+    })
+
+    return jsonify({"status": "joined"})
+
 #Load fantasy team options within league
 @app.route("/user/teams")
 def get_user_teams():

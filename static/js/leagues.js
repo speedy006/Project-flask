@@ -101,6 +101,35 @@ function loadPublicLeagues() {
     });
 }
 
+//Join public leagues
+async function joinPublicLeague(leagueId) {
+  const user = firebase.auth().currentUser;
+  if (!user) {
+    alert("You must be logged in to join a public league.");
+    return;
+  }
+
+  const token = await user.getIdToken();
+
+  const res = await fetch("/user/join_public_league", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ league_id: leagueId })
+  });
+
+  const data = await res.json();
+  if (res.ok && data.status === "joined") {
+    alert("Successfully joined public league!");
+    loadJoinedLeagues();
+    showLeagueDetails({ id: leagueId }); // Refresh details view
+  } else {
+    alert(data.error || "Could not join public league.");
+  }
+}
+
 //Display joined leagues
 async function loadJoinedLeagues() {
   const user = firebase.auth().currentUser;
@@ -171,21 +200,52 @@ document.getElementById("joinPrivateForm").onsubmit = async e => {
 
 //Display selected league details
 async function showLeagueDetails(league) {
-  document.getElementById("noLeagueSelected").style.display = "none";
-  document.getElementById("selectedLeagueDetails").style.display = "block";
+  const user = firebase.auth().currentUser;
+  const joinBtn = document.getElementById("joinPublicLeagueBtn");
+  const codeContainer = document.getElementById("leagueJoinCode");
+  const detailsSection = document.getElementById("selectedLeagueDetails");
+  const noLeagueSelected = document.getElementById("noLeagueSelected");
 
-  //Fetch latest league info if code wasn't included
+  noLeagueSelected.style.display = "none";
+  detailsSection.style.display = "block";
+
+  // Fetch latest league info if code wasn't included
   if (!league.code) {
     const res = await fetch(`/user/leagues/${league.id}/info`);
     league = await res.json();
   }
 
+  // Check if user has already joined this league
+  let hasJoined = false;
+  if (user) {
+    const token = await user.getIdToken();
+    const res = await fetch("/user/leagues/joined", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const joinedLeagues = await res.json();
+    hasJoined = Array.isArray(joinedLeagues) && joinedLeagues.some(l => l.id === league.id);
+  }
+
+  // If public and not joined, show only the join button
+  if (league.type === "public" && !hasJoined) {
+    joinBtn.style.display = "inline-block";
+    joinBtn.onclick = () => joinPublicLeague(league.id);
+
+    // Hide other details
+    document.getElementById("leagueNameHeading").textContent = "";
+    document.getElementById("leagueRestrictionLabel").textContent = "";
+    codeContainer.style.display = "none";
+    document.querySelector("#leagueStandingsTable tbody").innerHTML = "";
+    return;
+  }
+
+  // Otherwise show full league details
+  joinBtn.style.display = "none";
   document.getElementById("leagueNameHeading").textContent = league.name;
   document.getElementById("leagueRestrictionLabel").textContent =
     `Restriction: ${league.team_restriction || "None"}`;
 
-  //Show join code if league is private
-  const codeContainer = document.getElementById("leagueJoinCode");
   if (league.type === "private" && league.code) {
     codeContainer.style.display = "block";
     codeContainer.textContent = `Join Code: ${league.code}`;
@@ -193,7 +253,7 @@ async function showLeagueDetails(league) {
     codeContainer.style.display = "none";
   }
 
-  //Load standings
+  // Load standings
   const res = await fetch(`/user/leagues/${league.id}/standings`);
   const data = await res.json();
 
