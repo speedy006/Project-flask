@@ -48,9 +48,28 @@ def recalculate_fantasy_points_on_startup():
 
     print(f"\nRecalculated {count} fantasy teams.\n")
 
+def recalculate_driver_and_team_points():
+    #Recalculate driver totals
+    for driver_doc in db.collection("drivers").stream():
+        driver_data = driver_doc.to_dict()
+        races = driver_data.get("races", {})
+        total = sum(races.values())
+        db.collection("drivers").document(driver_doc.id).update({"points": total})
+
+    #Recalculate team totals
+    for team_doc in db.collection("teams").stream():
+        team_data = team_doc.to_dict()
+        total_score = 0
+        for d_id in team_data.get("drivers", []):
+            ddoc = db.collection("drivers").document(d_id).get()
+            if ddoc.exists:
+                total_score += ddoc.to_dict().get("points", 0)
+        db.collection("teams").document(team_doc.id).update({"score": total_score})
+
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
-print("\nFantasy team point recalculation...")
+print("\nPoints recalculation...")
+recalculate_driver_and_team_points()
 recalculate_fantasy_points_on_startup()
 
 #Firebase token verification
@@ -231,7 +250,7 @@ def update_race():
     race_id = data.get("id") or None
     race_name = data.get("name", "").strip()
     race_date = data.get("date", "").strip()
-    name_results = data.get("results", {})  # Already a dict
+    name_results = data.get("results", {})
 
     if not race_name or not race_date or not name_results:
         return jsonify({"error": "Missing race data"}), 400
@@ -243,10 +262,7 @@ def update_race():
         driver_doc = db.collection("drivers").document(driver_id).get()
         if driver_doc.exists:
             driver_data = driver_doc.to_dict()
-            new_total = driver_data.get("points", 0) + int(points)
-
             db.collection("drivers").document(driver_id).update({
-                "points": new_total,
                 f"races.{race_ref.id}": int(points)
             })
 
@@ -269,6 +285,10 @@ def update_race():
             driver = db.collection("drivers").document(d_id).get().to_dict()
             total_score += driver.get("points", 0)
         db.collection("teams").document(team_doc.id).update({"score": total_score})
+    
+    recalculate_driver_and_team_points()
+    recalculate_fantasy_points_on_startup()
+    print("All scores recalculated after race update.")
 
     return jsonify({"status": "Race recorded with driver IDs"}), 200
 
