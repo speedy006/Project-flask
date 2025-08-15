@@ -48,6 +48,41 @@ def recalculate_fantasy_points_on_startup():
 
     print(f"\nRecalculated {count} fantasy teams.\n")
 
+def recalculate_fantasy_points_for_team(team_id):
+    team_doc = db.collection("fantasy_teams").document(team_id).get()
+    if not team_doc.exists:
+        print(f"Team '{team_id}' not found")
+        return
+
+    team_data = team_doc.to_dict()
+    driver_ids = team_data.get("drivers", [])
+    constructor_id = team_data.get("team")
+    fantasy_team_name = team_data.get("name", team_id)
+
+    total_points = 0
+    print(f"\nUpdating team: {fantasy_team_name}")
+
+    for did in driver_ids:
+        ddoc = db.collection("drivers").document(did).get()
+        if ddoc.exists:
+            points = ddoc.to_dict().get("points", 0)
+            print(f"  Driver {did}: {points} pts")
+            total_points += points
+        else:
+            print(f"Driver '{did}' not found")
+
+    if constructor_id:
+        cdoc = db.collection("teams").document(constructor_id).get()
+        if cdoc.exists:
+            points = cdoc.to_dict().get("points", 0)
+            print(f"  Constructor {constructor_id}: {points} pts")
+            total_points += points
+        else:
+            print(f"Constructor '{constructor_id}' not found")
+
+    team_doc.reference.update({ "points": total_points })
+    print(f" Total updated: {total_points} pts")
+
 def recalculate_driver_and_team_points():
     #Recalculate driver totals
     for driver_doc in db.collection("drivers").stream():
@@ -140,7 +175,7 @@ def update_team():
     if not isinstance(driver_ids, list):
         return jsonify({"error": "Invalid driver format"}), 400
 
-    #Safely parse score and price
+    #Parse score and price
     def safe_int(val, default=0):
         try:
             return int(str(val).strip())
@@ -622,7 +657,7 @@ def handle_fantasy_teams():
         teams_ref = db.collection("fantasy_teams").where("user_id", "==", user_id).stream()
         teams = []
 
-        #Fetch readable names
+        # Fetch readable names
         drivers = {d.id: d.to_dict().get("name") for d in db.collection("drivers").stream()}
         team_map = {t.id: t.to_dict().get("name") for t in db.collection("teams").stream()}
 
@@ -654,7 +689,7 @@ def handle_fantasy_teams():
         if total_price > 100_000_000:
             return jsonify({"error": "Budget exceeded"}), 400
 
-        db.collection("fantasy_teams").add({
+        new_team_ref = db.collection("fantasy_teams").add({
             "user_id": user_id,
             "name": name,
             "drivers": driver_ids,
@@ -662,6 +697,10 @@ def handle_fantasy_teams():
             "price": total_price,
             "points": 0
         })
+
+        # Recalculate points for the newly created team
+        new_team_id = new_team_ref[1].id
+        recalculate_fantasy_points_for_team(new_team_id)
 
         return jsonify({"status": "Fantasy team created successfully"}), 200
     
