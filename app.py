@@ -36,7 +36,7 @@ def recalculate_fantasy_points_on_startup():
         if constructor_id:
             cdoc = db.collection("teams").document(constructor_id).get()
             if cdoc.exists:
-                points = cdoc.to_dict().get("points", 0)
+                points = cdoc.to_dict().get("score", 0)
                 print(f"  Constructor {constructor_id}: {points} pts")
                 total_points += points
             else:
@@ -103,9 +103,9 @@ def recalculate_driver_and_team_points():
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
-#print("\nPoints recalculation...")
+print("\nPoints recalculation...")
 #recalculate_driver_and_team_points()
-#recalculate_fantasy_points_on_startup()
+recalculate_fantasy_points_on_startup()
 
 #Firebase token verification
 def get_current_user_id():
