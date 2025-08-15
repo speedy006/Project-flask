@@ -103,9 +103,9 @@ def recalculate_driver_and_team_points():
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
-print("\nPoints recalculation...")
+#print("\nPoints recalculation...")
 #recalculate_driver_and_team_points()
-recalculate_fantasy_points_on_startup()
+#recalculate_fantasy_points_on_startup()
 
 #Firebase token verification
 def get_current_user_id():
